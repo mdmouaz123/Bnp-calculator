@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BNP calculator </title>
+  <style>
+    :root{--bg:#fffbe6;--card:#ffffff;--accent:#ff7f50;}
+    body{font-family:'Noto Sans Bengali', Arial, sans-serif;background:var(--bg);margin:0;padding:28px;color:#111}
+    .container{max-width:780px;margin:0 auto}
+    h1{font-size:22px;color:#ff4500}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);padding:18px;margin-top:18px}
+    .question-box{padding:18px;border-radius:10px;border:1px solid rgba(255,127,80,0.3);background:linear-gradient(180deg, rgba(255,127,80,0.1), transparent)}
+    .q-title{font-size:18px;margin:0 0 12px}
+    .options label{display:block;padding:10px;border-radius:8px;cursor:pointer;margin-bottom:8px;border:1px solid #eee}
+    input[type=radio]{margin-right:10px}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+    button{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,127,80,0.3)}
+    .progress{margin-top:12px;font-size:14px;color:#555}
+    .result-page{display:none;margin-top:18px;text-align:center}
+    .result-box{background:#fff0f5;border-left:6px solid var(--accent);padding:16px;border-radius:10px}
+    .result-box h3{margin:0 0 12px;font-size:22px;color:var(--accent)}
+    
+
+#scoreLine {
+  font-size:42px;       
+  font-weight:bold;     
+  color:#ff4500;
+  margin:0 0 20px 0;   
+}
+   
+    .summary{margin-top:12px;font-size:16px;color:#111}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>BNP Calculator </h1>
+  <div class="card">
+    <div id="quizArea">
+      <div class="question-box" id="questionBox">
+        <p class="q-title" id="qTitle">প্রশ্ন লোড হচ্ছে...</p>
+        <div class="options" id="options"></div>
+        <div class="controls">
+          <button class="ghost" id="prevBtn">পূর্বের</button>
+          <button id="nextBtn">পরের</button>
+          <div style="flex:1"></div>
+          <div class="progress" id="progressText">0 / 15</div>
+        </div>
+      </div>
+      <div class="result-page" id="resultPage">
+        <div class="result-box">
+          <h3>আপনার ফলাফল</h3>
+          <p id="scoreLine"></p>
+          <div class="summary" id="summaryText"></div>
+        </div>
+        <div style="margin-top:12px"><button id="restartBtn">আবার চেষ্টা করুন</button></div>
+        </div>
+
+    <footer>
+      <p class="muted">নোট: আপনার প্রাপ্ত নাম্বারের ১০% কোনো কারণ ছাড়াই কেটে নেওয়া হবে।</p>
+    </footer>
+  </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const questions=[
+{q:'১. আপনার প্রিয় জায়গা কোনটি?', opts:['ক. টেম্পুস্ট্যান্ড','খ. জুম মিটিং','গ. লন্ডন','ঘ. নয়াপল্টন']},
+{q:'২. আপনার ফেসবুকের বায়ো কি?', opts:['ক. সহ-সভাপতি অমুক শাখা','খ. জিয়ার সৈনিক','গ. ধর্মীয় নীতিবাক্য','ঘ. জয় বাংলা, জয় বঙ্গবন্ধু']},
+{q:'৩.আপনি কি মিথ্যা কথা বলেন?', opts:['ক. কনফিডেন্সের সাথে','খ. ইতস্তত বোধ করি','গ. মাঝে মাঝে বলি','ঘ. মিথ্যা বলা মহাপাপ']},
+{q:'৪.আপনি কোন পন্থী?', opts:['ক. লন্ডন পন্থী','খ. সবার আগে বাংলাদেশ','গ. ভারতপন্থী','ঘ. পাকিস্তানপন্থী']},
+{q:'৫.দেশের উন্নয়নে কোনটি বেশি গুরুত্বপূর্ণ?', opts:['ক. নির্বাচন','খ. দেশ নেতার আগমন','গ. সংস্কার','ঘ. খেলাফত প্রতিষ্ঠা']},
+{q:'৬.পদ পাওয়ার জন্য কোনটি দরকার?', opts:['ক. টাকা','খ. তেল মারা','গ. দলের জন্য ত্যাগ তিতিক্ষা','ঘ. পাঁচ ওয়াক্ত নামাজ পড়া']},
+{q:'৭.পুলিশের সাথে আপনার সম্পর্ক কেমন?', opts:['ক. ভালো না, চাঁদার ভাগ চায়','খ.ভাতৃত্বপূর্ণ','গ. দূরে দূরে থাকি','ঘ.দেখলেই মারতে আসে']},
+{q:'৮.কেউ চাঁদা না দিলে কি করেন?', opts:['ক.কেড়ে নেই','খ.হুমকি দেই','গ.পুলিশকে জানাই','ঘ.এড়িয়ে যাই']},
+{q:'৯.আপনার অনার্সের কততম বর্ষ চলে?', opts:['ক. আদু ভাই','খ. পড়াশোনার মাইরে বাপ','গ. পাঁচ থেকে আটের মধ্যে','ঘ. এক থেকে চার এর মধ্যে']},
+{q:'১০.আপনার প্রিয় ইভেন্ট কোনটি?', opts:['ক.ধাওয়া পাল্টা ধাওয়া','খ.কমেন্টের যুদ্ধ','গ.বাইক শো ডাউন','ঘ. প্রেম করা']},
+{q:'১১.আপনার প্রিয় খাবার কোনটি?', opts:['ক.একটি সিঙ্গারা একঢোক কোক','খ.ডিম বিরানি','গ.জন্মদিনের কেক','ঘ.মাইর']},
+{q:'১২.জামাত-শিবির সম্পর্কে আপনার মতামত কি?', opts:['ক. গুপ্ত ','খ.স্বাধীনতা বিরোধী','গ. পাকিস্তানি','ঘ.খারাপ হইলেও  মানুষ ভালো']},
+{q:'১৩. বিএনপি জাতীয় নির্বাচনের জয়ী হলে কি করতে পারে?', opts:['ক.ট্যাক্সের বদলে চাঁদার প্রচলন করবে','খ. সব খাম্বা গায়েব করে দিবে ','গ. গণতান্ত্রিকভাবে দেশ চালানো','ঘ. ইসলামী শাসন ব্যবস্থা চালু']},
+{q:'১৪.বিএনপি জাতীয় নির্বাচনে পরাজিত হলে কি করতে পারে ?', opts:['ক.সবাই লন্ডনে চলে যাবে ','খ. নির্বাচন বয়কট করবে ','গ. ঈদের পর আন্দোলনের ডাক দিবে ','ঘ. গণতন্ত্র হারাম ঘোষণা করবে']},
+{q:'১৫.কত ধানে কত চাল?', opts:['ক. ১৬ কোটি','খ. ৯০% চাল ১০% চিটা','গ. দাড়িপাল্লায় মেপে দেখতে হবে','ঘ. গোনার টাইম নাই']}
+];
+
+const scoreMap={'ক':40,'খ':30,'গ':20,'ঘ':10};
+let answers=new Array(questions.length).fill(null);
+let idx=0;
+
+const qTitle=document.getElementById('qTitle');
+const optionsDiv=document.getElementById('options');
+const prevBtn=document.getElementById('prevBtn');
+const nextBtn=document.getElementById('nextBtn');
+const progressText=document.getElementById('progressText');
+const questionBox=document.getElementById('questionBox');
+const resultPage=document.getElementById('resultPage');
+const scoreLine=document.getElementById('scoreLine');
+const summaryText=document.getElementById('summaryText');
+const restartBtn=document.getElementById('restartBtn');
+
+function renderQuestion(i){
+  const item=questions[i];
+  qTitle.textContent=item.q;
+  optionsDiv.innerHTML='';
+  const letters=['ক','খ','গ','ঘ'];
+  item.opts.forEach((opt,j)=>{
+    const lab=document.createElement('label');
+    const radio=document.createElement('input');
+    radio.type='radio'; radio.name='q'+i; radio.value=letters[j];
+    if(answers[i]===letters[j]) radio.checked=true;
+    radio.addEventListener('change',()=>{answers[i]=radio.value;});
+    lab.appendChild(radio); lab.appendChild(document.createTextNode(opt));
+    optionsDiv.appendChild(lab);
+  });
+  progressText.textContent=(i+1)+' / '+questions.length;
+  prevBtn.style.display=i===0?'none':'inline-block';
+  nextBtn.textContent=i===questions.length-1?'শেষ':'পরের';
+}
+
+function calcAndShowResult(){
+  let total=0;
+  for(let i=0;i<questions.length;i++){
+    const a=answers[i]; if(a&&scoreMap[a]) total+=scoreMap[a];
+  }
+  const max=questions.length*40;
+  let percent=Math.round((total/max)*100)-10;
+  if(percent<0) percent=0;
+
+  let text='';
+  if(percent>=80) text='আপনি জিয়ার খাটি সৈনিক, বিএনপির আর্দশে উজ্জীবিত প্রাণ। আপনার লন্ডনের ভিসা নিশ্চিত।';
+  else if(percent>=60) text='ভালো বিএনপি, আপনি সহসভাপতি হওয়ার যোগত্যাসম্পন্ন একজন মানুষ। আপনার নিকটস্থ এলাকাগুলোতে আপনার পোস্টার, ব্যানার লাগানো শুরু করুন';
+  else if(percent>=40) text='উদীয়মান বিএনপি। আপনার উচিত নিকটস্থ টেম্পুস্ট্যান্ড দখল করা ও মাঝারি সাইজের চাঁদাবাজি শুরু করা। নিয়মিত জয়তুনের তেল সেবন করুন এতে তেলবাজি করতে  সুবিধা হবে।';
+  else if(percent>=20) text='আপনি একজন ব্যর্থ বিএনপি। কিন্তু হতাশ হবেন না। লেগে থাকুন সৎ ভাবে স্বপ্ন জয় আপনারই হবে। ';
+  else text='আপনি ফেল।নিজেকে  বিএনপি দাবি করলেও আপনি মনে মনে একজন গুপ্তশিবির ।';
+
+  scoreLine.textContent= percent+'%';
+  summaryText.textContent=text;
+
+  questionBox.style.display='none';
+  resultPage.style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+prevBtn.addEventListener('click',()=>{if(idx>0){idx--;renderQuestion(idx);}});
+nextBtn.addEventListener('click',()=>{
+  if(!answers[idx]){if(!confirm('আপনি কোন অপশন সিলেক্ট করেননি। ছেড়ে যেতে চান?')) return;}
+  if(idx<questions.length-1){idx++;renderQuestion(idx);} else calcAndShowResult();
+});
+restartBtn.addEventListener('click',()=>{
+  answers=new Array(questions.length).fill(null); idx=0;
+  resultPage.style.display='none'; questionBox.style.display='block'; renderQuestion(idx);
+});
+
+renderQuestion(idx);
+</script>
+</body>
+</html>
